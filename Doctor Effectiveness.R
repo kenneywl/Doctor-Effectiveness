@@ -1,6 +1,7 @@
 
-#Objective: To maximize net profit by considering doctor effectiveness individually
-#           and in pairs. 
+#Objective: Determine the effectivenss of indivdual doctors and doctor pairs  
+#            by considering their effect on net profit.
+
 
 #Methods:1.Clean the data and put it in usable form.
 #        2.Do power analysis to determine what we should expect.
@@ -136,9 +137,6 @@ pwr.f2.test(u=18,v=135-18,f2=.15,sig.level=.05)
 
 #Lets build just the blocked factors.
 
-contrasts(swp$DAY) <- "contr.sum" #Force factor to sum to zero.
-contrasts(swp$MONTH) <- "contr.sum"
-
 swlm <- lm(Total_Production ~ DAY + MONTH,data=swp)
 summary(swlm)
 
@@ -186,7 +184,7 @@ swlm2 <- lm(form,data=swp)
 summary(swlm2)
 anova(swlm2)
 
-#Adj R squared is .53, not terrible, but not good.
+#Adj R squared is .52, not terrible, but not good.
 
 #I'll fit one more model with just the significant terms of the above model.
 docsnam_int_sig <- paste0(c("(",paste0(c(names(docs),interact[c(21,9,8,4,2)]),
@@ -215,6 +213,7 @@ res1 <- resid(swlm1)
 res2 <- resid(swlm2)
 res3 <- resid(swlm3)
 
+par(mfrow=c(2,2))
 hist(res)
 qqnorm(res);qqline(res)
 
@@ -263,33 +262,36 @@ plot(res3);abline(h=0)
 
 #Lets check residuals vs each factor.
 
+par(mfrow=c(1,2))
 plot(res~swp$MONTH)
 plot(res~swp$DAY)
 
-#Yep, heteroscedasticity.
+#Some heteroscedasticity.
 
+par(mfrow=c(2,2))
 for(i in attr(swlm1$terms,"term.labels")[1:11]){
   plot(res1~swp[,i],main=paste0("Residual vs ",i))
-  readline("Press enter to continue.")
 }
 
-#Yep, heteroscedasticity.
 
+#Some heteroscedasticity.
+par(mfrow=c(2,2))
 for(i in attr(swlm2$terms,"term.labels")[1:11]){
   plot(res2~swp[,i],main=paste0("Residual vs ",i))
-  readline("Press enter to continue.")
 }
 
-#Yep, heteroscedasticity.
-
+#Some heteroscedasticity.
+par(mfrow=c(2,2))
 for(i in attr(swlm3$terms,"term.labels")[1:11]){
   plot(res3~swp[,i],main=paste0("Residual vs ",i))
-  readline("Press enter to continue.")
 }
 
-#Yep, heteroscedasticity.
+#Some heteroscedasticity.
 
-#So there may be significance when there isn't any.
+par(mfrow=c(1,1)) #put settings back to default.
+
+#Some heteroscadiscty means that there may be significance 
+#when there isn't any. Estimates remain accurate though.
 #We press forward with this in mind.
 ##############################################################
 ##############################################################
@@ -314,11 +316,12 @@ anova(swlm2)
 
 #Lets look at the significant doctor pairs.
 #Kevin and Temp 
+#Heather and Kevin
 #Brittany and Temp
-#Heather and Samara
+#Brittany and Pino
 #Brittany and Kevin
 
-#This model look more closely at those
+#Lets look more closely at those
 
 summary(swlm3)
 
@@ -347,23 +350,18 @@ summary(swlm1)
 
 #Unfortinuatly there isn't much to help for scheduling.
 #It turns out that there isn't much to get from the data.
-#Except for Pouyan, which it is known that he produces more.
+#Except for pino, which it is known that he produces more.
+#Pouyan seems to be good too. 
 
 #Lets look at the base, blocked model.
 
 summary(swlm)
 
 #It is likely that is best to just schedule based on the day.
-#Lets make a quick model with just the day.
-
-levels(swp$DAY)
-
-#And it appears that Friday is terrible and monday is great for
+#Lets make a quick model with just the day. And it appears that 
+#Friday is terrible and monday is great for
 #for production, but this makes lots of sense.
-
-levels(swp$MONTH)
-
-#August is good and January isn't.
+#Also, August is good and January isn't.
 ##########################################################################
 ##########################################################################
 #5) Final words.
@@ -371,7 +369,7 @@ levels(swp$MONTH)
 #We determined that the data doesn't really have much to help.
 #The most signifince came from known points.
 
-#Pouyan makes a lot of money, (he is a pediatric doctor.)
+#Pino makes a lot of money, (he is a pediatric doctor so we knew this.)
 #Friday is terrible, monday is better. So the advice is to try to 
 #schedule more on friday to make more even, or schdule more
 #doctors on monday. 
@@ -382,12 +380,26 @@ levels(swp$MONTH)
 #August makes a lot of money and January doesn't make a lot. This might
 #help in determing the best days to take a vacation.
 
-#There is some information that can be sussed out fromt this data set
+#There is some information that can be sussed out from this data set
 #but not much of it is too helpful. The initial question was to determine
-#doctor effectivness in order to better schedule.
+#doctor effectivness in order to better schedule. The most I can confidently
+#say is that the presence of Pouyan correlates with high net profit.
 
-#The final answer is that the data doesn't show much
-#more than they already know.
+#It is important to realize that data does not always answer every question.
+#Sometimes the data doesn't tell a very nuanced story. Sometimes the data
+#has all the answers and sometimes the data doesn't say anything. In this case,
+#the data doesn't speak very loudly. It says most strongly that Pino makes the
+#company the most money, which isn't something you didn't already know.
 
+#Besides that, it says that Pouyan also makes a lot of money for the
+#company, which you might not have known.
+
+#There were a few significant doctor pairs, but the complications entailed in
+#scheduling them together or away from each other might not be worth the work.
+
+#If you want to try to use significant doctor pairs in scheduling we could automate
+#a process that does so. This is known in Operations Reaseach as an "assignment problem"
+#and there are many algorithms that we can use to do it. Just let me know what you
+#want to do.  ---Wayne Kenney
 
 
